@@ -1,0 +1,3 @@
+conda create --name gpt-sw3-finetune python=3.10 pytorch torchvision torchaudio pytorch-cuda=12.1 transformers peft sentencepiece huggingface_hub -c pytorch -c nvidia -c huggingface -c conda-forge
+
+pip install https://github.com/jllllll/bitsandbytes-windows-webui/releases/download/wheels/bitsandbytes-0.41.2.post2-py3-none-win_amd64.whl
