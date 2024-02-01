@@ -10,22 +10,29 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-# Länk till Huggingface-modell för att få rätt tokenizer och config
+# See https://huggingface.co/AI-Sweden-Models/ for details and license of
+# the GPT-SW3 models.
+
+# Link to Huggingface model to get tokenizer and config
 base_model = "AI-Sweden-Models/gpt-sw3-6.7b-v2"
-# Checkpoint kan vara lika med base_model, eller annan lokal modell
-# Jag använder en lokal kopia sparad i halv precision (bfloat16)
-# (vilket tar mindre plats på hårddisken)
+
+# base_model_checkpoint is either same as base_model to download the model
+# from huggingface, or the path to a local model.
+# You can save some disk space by saving a half precision (bfloat16) copy
+# of the model (using model.save_pretrained(), example in generated_text.py)
 base_model_checkpoint = "base-models/gpt-sw3-6.7b-v2-bf16"
 
-# Fortsätt träna från en sparad QLORA, annars sätt till False
-resume_from = False #'checkpoints/gpt-sw3-finetune-800' # "checkpoints/gpt-sw3-finetune-10" # 
+# Set to the path of a saved checkpoint or set to False to start training a
+# new LORA model.
+resume_from = False
 
-# Träningsdata för det här demot är en samling av manuskript från Creepypodden
-# Källa: https://creepypasta.se/
+# An example Swedish text corpus can be downloaded by running get_dataset.py
+# This is a collection of horror stories told on the podcast "Creepypodden".
+# https://www.creepypasta.se/
 train_data_file = "datasets/corpus_train.txt"
 
-# Om man vill spara minne kan man träna med kortare kontext, men det kanske
-# påverkar modellen negativt.
+# Context is the length of the models "memory", best to keep at 2048 for GPT2
+# models, but can be reduced to save memory when training.
 CONTEXT = 2048
 
 batch_size = 2
@@ -35,7 +42,7 @@ epochs = 2
 max_train_steps = 10000
 
 
-# Separat validerings-data, text som inte ingår i träningsdata.
+# Separate validation data, text that is not part of the training set.
 with open('datasets/corpus_validation.txt', encoding='utf-8') as f:
     VALIDATION_TEXT = f.read()
 
@@ -103,13 +110,12 @@ base_model = AutoModelForCausalLM.from_pretrained(base_model_checkpoint,
                                              device_map="auto")
 
 
-#model.gradient_checkpointing_enable() Sparar minne men lite långsammare
+#model.gradient_checkpointing_enable() # Save memory at the cost of training speed
 base_model = prepare_model_for_kbit_training(base_model)
 
 config = LoraConfig(
     r=128,
     lora_alpha=32,
-    #use_rslora=True,
     target_modules=[
         "wpe",
         "c_fc",
@@ -119,8 +125,7 @@ config = LoraConfig(
     ],
     bias="none",
     fan_in_fan_out=True,
-    #init_lora_weights="loftq"
-    lora_dropout=0.1,  # Conventional
+    lora_dropout=0.1,
     task_type="CAUSAL_LM",
 )
 
@@ -129,7 +134,6 @@ if not resume_from:
 else:
     print('Resuming training from QLORA:', resume_from)
     model = PeftModel.from_pretrained(base_model, resume_from, is_trainable=True, config=config)
-
 
 eval_model(model, tokenizer, generate=True)
 

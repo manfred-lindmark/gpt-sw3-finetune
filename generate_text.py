@@ -31,7 +31,7 @@ base_model = AutoModelForCausalLM.from_pretrained(base_model_name,
                                              torch_dtype=torch.bfloat16,
                                              device_map="auto",)
 
-# Om man vill läsa in modellen snabbare kan man spara den lokalt i halv precision
+# Save disk space by saving a local copy of the base model in half precision
 # base_model.save_pretrained(base_model_name.split('/')[-1]+'-bf16', max_shard_size="100GB")
 
 if USE_LORA:
@@ -41,8 +41,10 @@ else:
     model = base_model
     print('Using base model', base_model_name)
 
-# De här inställningarna har fungerat bra för mig, man kan experimentera med
-# temperature från ca 0.45 till 0.70, högre siffra ger mer variation
+# These settings worked well for me, but may need adjustment.
+# If the model is too repetitive try increasing temperature,
+# or if it's output is too random try lowering it.
+# A good range to try is from 0.45 to 0.70.
 sampling_settings = {'temperature': 0.55,
                     'repetition_penalty': 1.12,
                     'top_k': 40,
