@@ -27,13 +27,13 @@ python get_dataset.py
 ```
 
 ## Inference: just generating text
+The file "generate_text.py" is meant for testing inference on the finetuned model. Edit the file to set a text generation prompt, generation length or sampling settings. You can compare with the base by setting USE_LORA to True/False. The generated text is saved to "generated_text/output.txt", and each run will be appended to the same file.
 
 ## Training
+Run "train_gpt-sw3_qlora.py" to train a QLORA adapter model to a base GPT model. All settings can be changed by editing the file.
 
 ## Troubleshooting Python environment
-
 New versions of the required Python packages are frequently released so if there are any problems you should follow the installation guides for each of them to check their compatibility.
 
 ## Troubleshooting training
-
 Learning rate is a good first step to try increasing/decreasing.
